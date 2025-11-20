@@ -47,6 +47,6 @@ public class CNPJ
 		module = sum % 11;
 		validationDigits[1] = (module > 2) ? 11 - module : 0;
 
-		return ((cnpj[12] - '0') == validationDigits[0] && (cnpj[13] - '0') == validationDigits[1]);
+		return (cnpj[12] - '0') == validationDigits[0] && (cnpj[13] - '0') == validationDigits[1];
 	}
 }
