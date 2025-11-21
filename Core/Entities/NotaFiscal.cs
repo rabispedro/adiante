@@ -18,7 +18,7 @@ public class NotaFiscal
 	public decimal Valor { get; init; }
 
 	[JsonPropertyName("data_vencimento")]
-	public DateTime DataVencimento { get; set; }
+	public DateTime DataVencimento { get; set; } = DateTime.Now.AddMonths(1);
 
 	public static bool IsValid(NotaFiscal notaFiscal)
 	{

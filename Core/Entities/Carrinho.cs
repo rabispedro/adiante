@@ -5,27 +5,21 @@ namespace Core.Entities;
 public class Carrinho
 {
 	public CNPJ Cnpj { get; init; }
-	private ICollection<NotaFiscal> _notasFiscais;
-	public DateTime DataCriacao { get; init; }
-
-	public Carrinho()
-	{
-		_notasFiscais = new SortedSet<NotaFiscal>();
-		DataCriacao = DateTime.Today;
-	}
+	public ICollection<NotaFiscal> NotasFiscais { get; init; } = new LinkedList<NotaFiscal>();
+	public DateTime DataCriacao { get; init; } = DateTime.Now;
 
 	public ICollection<NotaFiscal> GetNotasFiscais()
 	{
-		return _notasFiscais.ToImmutableSortedSet();
+		return NotasFiscais.ToImmutableList();
 	}
 
 	public void AddNotaFiscal(NotaFiscal notaFiscal)
 	{
-		_notasFiscais.Add(notaFiscal);
+		NotasFiscais.Add(notaFiscal);
 	}
 
 	public void RemoveNotaFiscal(NotaFiscal notaFiscal)
 	{
-		_notasFiscais.Remove(notaFiscal);
+		NotasFiscais.Remove(notaFiscal);
 	}
 }

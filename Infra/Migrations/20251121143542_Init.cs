@@ -17,9 +17,9 @@ namespace Infra.Migrations
                 {
                     Cnpj = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Empresa = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Limite = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TotalBruto = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TotalLiquido = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Limite = table.Column<decimal>(type: "decimal(10,10)", nullable: false),
+                    TotalBruto = table.Column<decimal>(type: "decimal(10,10)", nullable: false),
+                    TotalLiquido = table.Column<decimal>(type: "decimal(10,10)", nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -33,7 +33,7 @@ namespace Infra.Migrations
                 {
                     Cnpj = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Nome = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Faturamento = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Faturamento = table.Column<decimal>(type: "decimal(10,10)", nullable: false),
                     Ramo = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

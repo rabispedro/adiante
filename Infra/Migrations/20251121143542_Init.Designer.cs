@@ -40,15 +40,15 @@ namespace Infra.Migrations
                         .HasAnnotation("Relational:JsonPropertyName", "empresa");
 
                     b.Property<decimal>("Limite")
-                        .HasColumnType("decimal(18,2)")
+                        .HasColumnType("decimal(10,10)")
                         .HasAnnotation("Relational:JsonPropertyName", "limite");
 
                     b.Property<decimal>("TotalBruto")
-                        .HasColumnType("decimal(18,2)")
+                        .HasColumnType("decimal(10,10)")
                         .HasAnnotation("Relational:JsonPropertyName", "total_bruto");
 
                     b.Property<decimal>("TotalLiquido")
-                        .HasColumnType("decimal(18,2)")
+                        .HasColumnType("decimal(10,10)")
                         .HasAnnotation("Relational:JsonPropertyName", "total_liquido");
 
                     b.HasKey("Cnpj");
@@ -62,7 +62,7 @@ namespace Infra.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Faturamento")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(10,10)");
 
                     b.Property<string>("Nome")
                         .IsRequired()

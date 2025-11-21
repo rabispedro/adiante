@@ -15,4 +15,4 @@ services:
     restart: always
     mem_limit: 1024mb
     ports:
-      - 6399:6379
+      - 6379:6379

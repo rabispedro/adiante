@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Dynamic;
 using System.Text.Json.Serialization;
 
 namespace Core.Entities;
@@ -15,18 +17,15 @@ public class Antecipacao
 	[JsonPropertyName("limite")]
 	public decimal Limite { get; init; }
 
-
+	[NotMapped]
 	[JsonPropertyName("notas_fiscais")]
-	public ICollection<NotaFiscalCheckout> NotasFiscais = new SortedSet<NotaFiscalCheckout>();
-
+	public ICollection<NotaFiscalCheckout> NotasFiscais { get; set; } = new LinkedList<NotaFiscalCheckout>();
 
 	[JsonPropertyName("total_bruto")]
 	public decimal TotalBruto { get; set; }
 
-
 	[JsonPropertyName("total_liquido")]
 	public decimal TotalLiquido { get; set; }
-
 
 	[JsonIgnore]
 	public DateTime Date { get; init; } = DateTime.Today;

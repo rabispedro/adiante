@@ -1,9 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Core.Entities;
 
+
 public class NotaFiscalCheckout
 {
+	[Key]
 	[JsonPropertyName("numero")]
 	public long Numero { get; init; }
 

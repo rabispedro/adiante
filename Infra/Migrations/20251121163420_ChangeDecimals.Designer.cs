@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infra.Migrations
 {
     [DbContext(typeof(SqlServerDbContext))]
-    [Migration("20251121154913_AddNotasFiscais")]
-    partial class AddNotasFiscais
+    [Migration("20251121163420_ChangeDecimals")]
+    partial class ChangeDecimals
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,15 +40,15 @@ namespace Infra.Migrations
                         .HasAnnotation("Relational:JsonPropertyName", "empresa");
 
                     b.Property<decimal>("Limite")
-                        .HasColumnType("decimal(10,10)")
+                        .HasColumnType("decimal(18,2)")
                         .HasAnnotation("Relational:JsonPropertyName", "limite");
 
                     b.Property<decimal>("TotalBruto")
-                        .HasColumnType("decimal(10,10)")
+                        .HasColumnType("decimal(18,2)")
                         .HasAnnotation("Relational:JsonPropertyName", "total_bruto");
 
                     b.Property<decimal>("TotalLiquido")
-                        .HasColumnType("decimal(10,10)")
+                        .HasColumnType("decimal(18,2)")
                         .HasAnnotation("Relational:JsonPropertyName", "total_liquido");
 
                     b.HasKey("Cnpj");
@@ -62,7 +62,7 @@ namespace Infra.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Faturamento")
-                        .HasColumnType("decimal(10,10)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -93,7 +93,7 @@ namespace Infra.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Valor")
-                        .HasColumnType("decimal(10,10)")
+                        .HasColumnType("decimal(18,2)")
                         .HasAnnotation("Relational:JsonPropertyName", "valor");
 
                     b.HasKey("Numero");

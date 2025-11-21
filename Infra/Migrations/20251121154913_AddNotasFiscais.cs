@@ -18,7 +18,7 @@ namespace Infra.Migrations
                     Numero = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     EmpresaCnpj = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Valor = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Valor = table.Column<decimal>(type: "decimal(10,10)", nullable: false),
                     DataVencimento = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>

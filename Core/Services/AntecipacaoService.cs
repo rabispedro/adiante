@@ -1,8 +1,8 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Core.Entities;
 using Core.Persistence;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace Core.Services;
 
@@ -64,12 +64,12 @@ public class AntecipacaoService
 
 		var carrinhoCached = await _cache.GetAsync($"carrinho:{cnpj.Value}:${today}");
 
-		var carrinho = JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
+		if (carrinhoCached == null)
+		{
+			throw new ArgumentException("Antecipacao sem Carrinho");
+		}
 
-		// if (carrinho == null)
-		// {
-		// 	throw new ArgumentException("Antecipacao sem Carrinho");
-		// }
+		var carrinho = JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
 
 		var notasFiscais = carrinho.GetNotasFiscais();
 
@@ -94,7 +94,7 @@ public class AntecipacaoService
 				ValorLiquido = valorLiquido
 			};
 
-			antecipacao.AddNotaFiscal(notaFiscalCheckout);
+			antecipacao.NotasFiscais.Add(notaFiscalCheckout);
 		}
 
 		antecipacao.TotalBruto = totalBruto;
@@ -170,11 +170,10 @@ public class AntecipacaoService
 	{
 		var today = DateTime.Today;
 
+
 		var carrinhoCached = await _cache.GetAsync($"carrinho:{cnpj.Value}:${today}");
 
-		var carrinho = JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
-
-		carrinho ??= new Carrinho();
+		var carrinho = carrinhoCached == null ? new Carrinho() : JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
 
 		var notaFiscal = await _notaFiscalRepository.GetNotaFiscalByNumero(numeroNotaFiscal);
 
@@ -200,7 +199,8 @@ public class AntecipacaoService
 		}
 
 		carrinho.AddNotaFiscal(notaFiscal);
-		await _cache.RefreshAsync($"carrinho:{cnpj.Value}:${today}");
+
+		await _cache.SetAsync($"carrinho:{cnpj.Value}:${today}", JsonSerializer.SerializeToUtf8Bytes(carrinho), new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTime.Now.AddDays(2)});
 
 		return carrinho;
 	}
