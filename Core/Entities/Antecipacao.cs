@@ -1,44 +1,43 @@
-﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Empresa;
 
-namespace Antecipacao;
+namespace Core.Entities;
 
-public class AntecipacaoModel
+public class Antecipacao
 {
 	[JsonPropertyName("empresa")]
 	public string Empresa { get; init; } = string.Empty;
 
+	[Key]
 	[JsonPropertyName("cnpj")]
 	public string Cnpj { get; init; } = string.Empty;
 
 	[JsonPropertyName("limite")]
 	public decimal Limite { get; init; }
 
-	[JsonIgnore]
-	private ICollection<NotaFiscalModel> _notasFiscais = new SortedSet<NotaFiscalModel>();
+
+	[JsonPropertyName("notas_fiscais")]
+	public ICollection<NotaFiscalCheckout> NotasFiscais = new SortedSet<NotaFiscalCheckout>();
+
 
 	[JsonPropertyName("total_bruto")]
 	public decimal TotalBruto { get; set; }
 
+
 	[JsonPropertyName("total_liquido")]
 	public decimal TotalLiquido { get; set; }
+
 
 	[JsonIgnore]
 	public DateTime Date { get; init; } = DateTime.Today;
 
-	public void AddNotaFiscal(NotaFiscalModel NotaFiscal)
+	public void AddNotaFiscal(NotaFiscalCheckout NotaFiscal)
 	{
-		_notasFiscais.Add(NotaFiscal);
+		NotasFiscais.Add(NotaFiscal);
 	}
 
-	public void RemoveNotaFiscal(NotaFiscalModel NotaFiscal)
+	public void RemoveNotaFiscal(NotaFiscalCheckout NotaFiscal)
 	{
-		_notasFiscais.Remove(NotaFiscal);
-	}
-
-	public ICollection<NotaFiscalModel> GetNotasFiscais()
-	{
-		return [.. _notasFiscais];
+		NotasFiscais.Remove(NotaFiscal);
 	}
 }
