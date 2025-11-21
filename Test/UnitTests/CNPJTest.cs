@@ -1,4 +1,5 @@
-﻿using Empresa;
+﻿
+using Core.Entities;
 
 namespace Test.UnitTest;
 
