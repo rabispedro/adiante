@@ -5,7 +5,7 @@ namespace Core.Entities;
 public class Empresa
 {
 	[Key]
-	public string Cnpj { get; init; }
+	public string Cnpj { get; init; } = string.Empty;
 	public string Nome { get; init; } = string.Empty;
 	public decimal Faturamento { get; init; }
 	public RamoEmpresa Ramo { get; init; }
@@ -21,24 +21,28 @@ public class Empresa
 		return (empresa != null) && !string.IsNullOrWhiteSpace(empresa.Nome) && CNPJ.IsValid(empresa.Cnpj);
 	}
 
-	// [JsonConstructor]
-	// public Empresa(string cnpj, string nome, decimal faturamento, string ramo)
-	// {
-	// 	Cnpj = new CNPJ(cnpj);
-	// 	Nome = nome;
-	// 	Faturamento = faturamento;
+	// NOTE: calcular limite inteiro dentro da empresa
+	public decimal GetLimite()
+	{
+		decimal percent;
 
-	// 	if (ramo.ToLowerInvariant().Equals(RamoEmpresa.PRODUTOS.ToString().ToLowerInvariant()))
-	// 	{
-	// 		Ramo = RamoEmpresa.PRODUTOS;
-	// 	}
-	// 	else if (ramo.ToLowerInvariant().Equals(RamoEmpresa.SERVICOS.ToString().ToLowerInvariant()))
-	// 	{
-	// 		Ramo = RamoEmpresa.SERVICOS;
-	// 	}
-	// 	else
-	// 	{
-	// 		throw new ArgumentException("Invalid Ramo");
-	// 	}
-	// }
+		if (Faturamento < 10000.00M)
+		{
+			percent = 0.00M;
+		}
+		else if (Faturamento < 50000.00M)
+		{
+			percent = 0.50M;
+		}
+		else if (Faturamento < 100000.00M)
+		{
+			percent = Ramo == RamoEmpresa.SERVICOS ? 0.55M : 0.60M;
+		}
+		else
+		{
+			percent = Ramo == RamoEmpresa.SERVICOS ? 0.60M : 0.65M;
+		}
+
+		return decimal.Subtract(Faturamento, decimal.Multiply(percent, Faturamento));
+	}
 }

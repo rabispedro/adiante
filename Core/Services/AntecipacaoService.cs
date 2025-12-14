@@ -27,12 +27,7 @@ public class AntecipacaoService
 
 	public async Task<Antecipacao> GetAntecipacaoByCnpjV1(CNPJ cnpj)
 	{
-		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value);
-
-		if (empresa == null)
-		{
-			throw new ArgumentException("Empresa not found");
-		}
+		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value) ?? throw new ArgumentException("Empresa not found");
 
 		var today = DateTime.Today;
 
@@ -43,41 +38,19 @@ public class AntecipacaoService
 			throw new ArgumentException("Antecipacao already made");
 		}
 
-		decimal percent = 0.00M, totalBruto = 0.00M, totalLiquido = 0.00M;
+		decimal totalBruto = 0.00M, totalLiquido = 0.00M;
 
-		if (empresa.Faturamento < 10000.00M)
-		{
-			percent = 0.00M;
-		}
-		else if (empresa.Faturamento < 50000.00M)
-		{
-			percent = 0.50M;
-		}
-		else if (empresa.Faturamento < 100000.00M)
-		{
-			percent = empresa.Ramo == Empresa.RamoEmpresa.SERVICOS ? 0.55M : 0.60M;
-		}
-		else
-		{
-			percent = empresa.Ramo == Empresa.RamoEmpresa.SERVICOS ? 0.60M : 0.65M;
-		}
-
-		var carrinhoCached = await _cache.GetAsync($"carrinho:{cnpj.Value}:${today}");
-
-		if (carrinhoCached == null)
-		{
-			throw new ArgumentException("Antecipacao sem Carrinho");
-		}
+		var carrinhoCached = await _cache.GetAsync($"carrinho:{cnpj.Value}:${today}") ?? throw new ArgumentException("Antecipacao sem Carrinho");
 
 		var carrinho = JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
 
-		var notasFiscais = carrinho.GetNotasFiscais();
+		var notasFiscais = carrinho!.GetNotasFiscais();
 
 		Antecipacao antecipacao = new()
 		{
 			Cnpj = cnpj.Value,
 			Empresa = empresa.Nome,
-			Limite = empresa.Faturamento
+			Limite = empresa.GetLimite()
 		};
 
 		foreach (var notaFiscal in notasFiscais)
@@ -97,8 +70,8 @@ public class AntecipacaoService
 			antecipacao.NotasFiscais.Add(notaFiscalCheckout);
 		}
 
-		antecipacao.TotalBruto = totalBruto;
-		antecipacao.TotalLiquido = totalLiquido;
+		antecipacao.TotalBruto = Math.Max(totalBruto, antecipacao.Limite);
+		antecipacao.TotalLiquido = Math.Max(totalLiquido, antecipacao.Limite);
 
 		await _antecipacaoRepository.CreateAntecipacao(antecipacao);
 		await _cache.RemoveAsync($"carrinho:{cnpj.Value}:${today}");
@@ -106,64 +79,10 @@ public class AntecipacaoService
 		return antecipacao;
 	}
 
-	public async Task<Antecipacao> GetAntecipacaoByCnpjV2(CNPJ cnpj)
-	{
-		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value);
-
-		if (empresa == null)
-		{
-			throw new ArgumentException("Empresa not found");
-		}
-
-		var today = DateTime.Today;
-
-		var antecipacaoExists = await _antecipacaoRepository.ExistsAntecipacaoByCnpjWithinMonth(cnpj.Value, today);
-
-		if (antecipacaoExists)
-		{
-			throw new ArgumentException("Antecipacao already made");
-		}
-
-		var carrinhoCached = await _cache.GetAsync($"carrinho:{cnpj.Value}:${today}");
-
-		var carrinho = JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
-
-		var notasFiscais = carrinho.GetNotasFiscais();
-
-
-
-		return new Antecipacao();
-	}
-
 	public async Task<decimal> GetLimiteAntecipacao(CNPJ cnpj)
 	{
-		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value);
-
-		if (empresa == null)
-		{
-			throw new ArgumentException("Empresa not found");
-		}
-
-		decimal percent = 0.00M;
-
-		if (empresa.Faturamento < 10000.00M)
-		{
-			percent = 0.00M;
-		}
-		else if (empresa.Faturamento < 50000.00M)
-		{
-			percent = 0.50M;
-		}
-		else if (empresa.Faturamento < 100000.00M)
-		{
-			percent = empresa.Ramo == Empresa.RamoEmpresa.SERVICOS ? 0.55M : 0.60M;
-		}
-		else
-		{
-			percent = empresa.Ramo == Empresa.RamoEmpresa.SERVICOS ? 0.60M : 0.65M;
-		}
-
-		return decimal.Subtract(empresa.Faturamento, decimal.Multiply(percent, empresa.Faturamento));
+		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value) ?? throw new ArgumentException("Empresa not found");
+		return empresa.GetLimite();
 	}
 
 	public async Task<Carrinho> AddNotaFiscalToCart(CNPJ cnpj, long numeroNotaFiscal)
@@ -175,21 +94,11 @@ public class AntecipacaoService
 
 		var carrinho = carrinhoCached == null ? new Carrinho() : JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
 
-		var notaFiscal = await _notaFiscalRepository.GetNotaFiscalByNumero(numeroNotaFiscal);
+		var notaFiscal = await _notaFiscalRepository.GetNotaFiscalByNumero(numeroNotaFiscal) ?? throw new ArgumentException("Nota Fiscal not found");
 
-		if (notaFiscal == null)
-		{
-			throw new ArgumentException("Nota Fiscal not found");
-		}
+		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value) ?? throw new ArgumentException("Empresa not found");
 
-		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value);
-
-		if (empresa == null)
-		{
-			throw new ArgumentException("Empresa not found");
-		}
-
-		var valorCarrinho = carrinho
+		var valorCarrinho = carrinho!
 			.GetNotasFiscais()
 			.Sum(notaFiscal => notaFiscal.Valor);
 
@@ -200,7 +109,7 @@ public class AntecipacaoService
 
 		carrinho.AddNotaFiscal(notaFiscal);
 
-		await _cache.SetAsync($"carrinho:{cnpj.Value}:${today}", JsonSerializer.SerializeToUtf8Bytes(carrinho), new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTime.Now.AddDays(2)});
+		await _cache.SetAsync($"carrinho:{cnpj.Value}:${today}", JsonSerializer.SerializeToUtf8Bytes(carrinho), new DistributedCacheEntryOptions() { AbsoluteExpiration = DateTime.Now.AddDays(15) });
 
 		return carrinho;
 	}
@@ -211,20 +120,11 @@ public class AntecipacaoService
 
 		var carrinhoCached = await _cache.GetAsync($"carrinho:{cnpj.Value}:${today}");
 
-		var carrinho = JsonSerializer.Deserialize<Carrinho>(carrinhoCached);
-		if (carrinho == null)
-		{
-			throw new ArgumentException("Carrinho not found");
-		}
+		var carrinho = JsonSerializer.Deserialize<Carrinho>(carrinhoCached) ?? throw new ArgumentException("Carrinho not found");
 
 		var notaFiscal = carrinho
 			.GetNotasFiscais()
-			.First(notaFiscal => notaFiscal.Numero == numeroNotaFiscal);
-
-		if (notaFiscal == null)
-		{
-			throw new ArgumentException("Nota Fiscal not found");
-		}
+			.First(notaFiscal => notaFiscal.Numero == numeroNotaFiscal) ?? throw new ArgumentException("Nota Fiscal not found");
 
 		carrinho.RemoveNotaFiscal(notaFiscal);
 		await _cache.RefreshAsync($"carrinho:{cnpj.Value}:${today}");

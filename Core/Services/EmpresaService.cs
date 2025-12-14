@@ -48,13 +48,8 @@ public class EmpresaService
 			throw new ArgumentException("Invalid Nota Fiscal");
 		}
 
-		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value);
+		var empresa = await _empresaRepository.GetEmpresaByCnpj(cnpj.Value) ?? throw new ArgumentException("Empresa not found");
 		
-		if (empresa == null)
-		{
-			throw new ArgumentException("Empresa not found");
-		}
-
 		notaFiscal.Empresa = empresa;
 
 		await _notaFiscalRepository.CreateNotaFiscal(notaFiscal);
